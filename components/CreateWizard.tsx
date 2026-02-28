@@ -12,6 +12,7 @@ const STEP_LABELS = ["Flower", "Wrapping", "Note", "Share"];
 
 export default function CreateWizard() {
   const [step, setStep] = useState(1);
+  const [stepAnimation, setStepAnimation] = useState<"left" | "right">("left");
   const [selectedFlowerId, setSelectedFlowerId] = useState<string>();
   const [selectedWrapId, setSelectedWrapId] = useState<string>();
   const [note, setNote] = useState("");
@@ -67,11 +68,13 @@ export default function CreateWizard() {
 
   function handleNext() {
     if (step === 1 && selectedFlower) {
+      setStepAnimation("left");
       setStep(2);
       return;
     }
 
     if (step === 2 && selectedWrap) {
+      setStepAnimation("left");
       setStep(3);
       return;
     }
@@ -80,8 +83,17 @@ export default function CreateWizard() {
       const nextLink = buildShareLink();
       setShareLink(nextLink);
       setCopyState("idle");
+      setStepAnimation("left");
       setStep(4);
     }
+  }
+
+  function handleBack() {
+    if (step === 1) {
+      return;
+    }
+    setStepAnimation("right");
+    setStep((prev) => Math.max(prev - 1, 1));
   }
 
   async function handleCopy() {
@@ -95,15 +107,6 @@ export default function CreateWizard() {
     } catch {
       setCopyState("error");
     }
-  }
-
-  function reset() {
-    setStep(1);
-    setSelectedFlowerId(undefined);
-    setSelectedWrapId(undefined);
-    setNote("");
-    setShareLink("");
-    setCopyState("idle");
   }
 
   return (
@@ -121,139 +124,144 @@ export default function CreateWizard() {
         </aside>
       ) : null}
 
-      <section className="mx-auto w-full max-w-3xl space-y-4">
+      <section className="mx-auto w-full max-w-3xl space-y-3 sm:space-y-4">
         <Progress currentStep={step} labels={STEP_LABELS} />
 
-        <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm sm:p-6">
-          {step === 1 ? (
-            <div className="space-y-4">
-              <h2 className="text-center text-lg font-normal text-ink">Choose a flower</h2>
-              <div className="mx-auto w-full max-w-[39rem]">
-                <OptionGrid
-                  items={flowers}
-                  selectedId={selectedFlowerId}
-                  onSelect={setSelectedFlowerId}
-                  groupLabel="Flower option"
-                  imageClassName="object-contain origin-top scale-[1.33]"
-                />
-              </div>
-            </div>
-          ) : null}
-
-          {step === 2 ? (
-            <div className="space-y-4">
-              <div className="mx-auto w-full max-w-[28rem]">
-                <CompositePreview
-                  flowerSrc={selectedFlower?.src}
-                  wrapSrc={selectedWrap?.src}
-                  plain
-                  className="bg-white"
-                />
-              </div>
-              <h2 className="text-center text-lg font-normal text-ink">Choose a wrapping</h2>
-              <div className="mx-auto w-full max-w-[39rem]">
-                <OptionGrid
-                  items={wraps}
-                  selectedId={selectedWrapId}
-                  onSelect={setSelectedWrapId}
-                  groupLabel="Wrapping option"
-                  imageClassName="object-contain origin-bottom scale-[1.33] translate-y-[10%]"
-                  horizontal
-                />
-              </div>
-            </div>
-          ) : null}
-
-          {step === 3 ? (
-            <div className="space-y-4 min-h-[32rem]">
-              <div className="mx-auto w-full max-w-[28rem]">
-                <CompositePreview
-                  flowerSrc={selectedFlower?.src}
-                  wrapSrc={selectedWrap?.src}
-                  plain
-                  className="bg-white"
-                />
-              </div>
-              <div className="mx-auto w-full max-w-[39rem]">
-                <textarea
-                  value={note}
-                  onChange={(event) => setNote(event.target.value.slice(0, MAX_NOTE_LENGTH))}
-                  maxLength={MAX_NOTE_LENGTH}
-                  rows={6}
-                  placeholder="A tiny note from your heart..."
-                  className="handwriting w-full resize-none bg-transparent px-1 py-2 text-3xl leading-tight text-slate-700 placeholder:text-slate-300 focus-visible:outline-none"
-                />
-                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                  <span>{note.length}/{MAX_NOTE_LENGTH}</span>
-                  {!isNoteValid ? (
-                    <span className="text-rose-500">Please add a short note to continue.</span>
-                  ) : null}
+        <div className="rounded-2xl border border-rose-100 bg-white p-4 shadow-sm sm:p-6">
+          <div
+            key={step}
+            className={stepAnimation === "left" ? "animate-step-swipe-left" : "animate-step-swipe-right"}
+          >
+            {step === 1 ? (
+              <div className="space-y-4">
+                <h2 className="text-center text-base font-normal text-ink sm:text-lg">Choose a flower</h2>
+                <div className="mx-auto w-full max-w-[39rem]">
+                  <OptionGrid
+                    items={flowers}
+                    selectedId={selectedFlowerId}
+                    onSelect={setSelectedFlowerId}
+                    groupLabel="Flower option"
+                    imageClassName="object-contain origin-top scale-[1.33]"
+                  />
                 </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {step === 4 ? (
-            <div className="space-y-4 min-h-[46rem]">
-              <div className="mx-auto w-full max-w-[28rem]">
-                <CompositePreview
-                  flowerSrc={selectedFlower?.src}
-                  wrapSrc={selectedWrap?.src}
-                  plain
-                  className="bg-white"
-                />
+            {step === 2 ? (
+              <div className="space-y-4">
+                <div className="mx-auto w-full max-w-[28rem]">
+                  <CompositePreview
+                    flowerSrc={selectedFlower?.src}
+                    wrapSrc={selectedWrap?.src}
+                    plain
+                    className="bg-white"
+                  />
+                </div>
+                <h2 className="text-center text-base font-normal text-ink sm:text-lg">Choose a wrapping</h2>
+                <div className="mx-auto w-full max-w-[39rem]">
+                  <OptionGrid
+                    items={wraps}
+                    selectedId={selectedWrapId}
+                    onSelect={setSelectedWrapId}
+                    groupLabel="Wrapping option"
+                    imageClassName="object-contain origin-bottom scale-[1.33] translate-y-[10%]"
+                    horizontal
+                  />
+                </div>
               </div>
-              <div className="mx-auto mt-4 w-full max-w-[39rem] space-y-4">
-                <p className="text-sm text-slate-600">
-                  Anyone with this link can open your bouquet and read the note.
-                </p>
+            ) : null}
 
-                <p className="handwriting max-h-[8rem] min-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words text-base leading-7 text-rose-700">
-                  "{previewNote || " "}"
-                </p>
-
-                <label className="mt-10 block space-y-2">
-                  <span className="text-xs font-normal uppercase tracking-wide text-slate-500">
-                    Shareable link
-                  </span>
-                  <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                    <input
-                      value={shareLink}
-                      readOnly
-                      className="w-full bg-transparent text-sm text-slate-700 focus-visible:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleCopy}
-                      aria-label="Copy shareable link"
-                      className="text-slate-500 transition hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        className="h-6 w-6"
-                        aria-hidden
-                      >
-                        <rect x="9" y="9" width="10" height="10" rx="2" />
-                        <rect x="5" y="5" width="10" height="10" rx="2" />
-                      </svg>
-                    </button>
+            {step === 3 ? (
+              <div className="space-y-4 min-h-[28rem] sm:min-h-[32rem]">
+                <div className="mx-auto w-full max-w-[28rem]">
+                  <CompositePreview
+                    flowerSrc={selectedFlower?.src}
+                    wrapSrc={selectedWrap?.src}
+                    plain
+                    className="bg-white"
+                  />
+                </div>
+                <div className="mx-auto w-full max-w-[39rem]">
+                  <textarea
+                    value={note}
+                    onChange={(event) => setNote(event.target.value.slice(0, MAX_NOTE_LENGTH))}
+                    maxLength={MAX_NOTE_LENGTH}
+                    rows={5}
+                    placeholder="A tiny note from your heart..."
+                    className="handwriting w-full resize-none bg-transparent px-1 py-2 text-2xl leading-tight text-slate-700 placeholder:text-slate-300 focus-visible:outline-none sm:text-3xl"
+                  />
+                  <div className="mt-2 flex flex-col gap-1 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <span>{note.length}/{MAX_NOTE_LENGTH}</span>
+                    {!isNoteValid ? (
+                      <span className="text-rose-500">Please add a short note to continue.</span>
+                    ) : null}
                   </div>
-                </label>
+                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
 
-        <div className="flex items-center justify-between gap-3">
+            {step === 4 ? (
+              <div className="space-y-4 min-h-[40rem] sm:min-h-[46rem]">
+                <div className="mx-auto w-full max-w-[28rem]">
+                  <CompositePreview
+                    flowerSrc={selectedFlower?.src}
+                    wrapSrc={selectedWrap?.src}
+                    plain
+                    className="bg-white"
+                  />
+                </div>
+                <div className="mx-auto mt-4 w-full max-w-[39rem] space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Anyone with this link can open your bouquet and read the note.
+                  </p>
+
+                  <p className="handwriting max-h-[8rem] min-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words text-base leading-7 text-rose-700">
+                    "{previewNote || " "}"
+                  </p>
+
+                  <label className="mt-6 block space-y-2 sm:mt-10">
+                    <span className="text-xs font-normal uppercase tracking-wide text-slate-500">
+                      Shareable link
+                    </span>
+                    <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                      <input
+                        value={shareLink}
+                        readOnly
+                        className="w-full bg-transparent text-sm text-slate-700 focus-visible:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCopy}
+                        aria-label="Copy shareable link"
+                        className="text-slate-500 transition hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          className="h-6 w-6"
+                          aria-hidden
+                        >
+                          <rect x="9" y="9" width="10" height="10" rx="2" />
+                          <rect x="5" y="5" width="10" height="10" rx="2" />
+                        </svg>
+                      </button>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+ 
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
-            onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+            onClick={handleBack}
             disabled={step === 1}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-normal text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-normal text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto sm:py-2"
           >
             Back
           </button>
@@ -263,7 +271,7 @@ export default function CreateWizard() {
               type="button"
               onClick={handleNext}
               disabled={!canGoNext}
-              className="rounded-xl bg-ink px-5 py-2 text-sm font-normal text-white shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-45"
+              className="w-full rounded-xl bg-ink px-5 py-2.5 text-sm font-normal text-white shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto sm:py-2"
             >
               {step === 3 ? "Generate link" : "Next"}
             </button>
@@ -272,7 +280,7 @@ export default function CreateWizard() {
               href={shareLink || "#"}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl bg-rose-500 px-5 py-2 text-sm font-normal text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+              className="w-full rounded-xl bg-rose-500 px-5 py-2.5 text-center text-sm font-normal text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 sm:w-auto sm:py-2"
             >
               Preview recipient
             </Link>
@@ -284,7 +292,7 @@ export default function CreateWizard() {
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed bottom-5 right-5 rounded-xl bg-ink px-3 py-2 text-xs font-normal text-white shadow-soft"
+          className="pointer-events-none fixed bottom-4 left-4 right-4 rounded-xl bg-ink px-3 py-2 text-center text-xs font-normal text-white shadow-soft sm:bottom-5 sm:left-auto sm:right-5"
         >
           Link copied
         </div>

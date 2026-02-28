@@ -8,8 +8,47 @@
 
 body {
   font-family: Optima, Candara, "Noto Sans", "Trebuchet MS", sans-serif;
+  background-color: #fff3f8;
+  overflow-x: hidden;
 }
 
 .handwriting {
   font-family: "Bradley Hand", "Segoe Print", "Snell Roundhand", "Comic Sans MS", cursive;
+}
+
+@keyframes step-swipe-left {
+  from {
+    opacity: 0;
+    transform: translate3d(30px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes step-swipe-right {
+  from {
+    opacity: 0;
+    transform: translate3d(-30px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-step-swipe-left {
+  animation: step-swipe-left 260ms ease-out;
+}
+
+.animate-step-swipe-right {
+  animation: step-swipe-right 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-swipe-left,
+  .animate-step-swipe-right {
+    animation: none;
+  }
 }
