@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: Optima, Candara, "Noto Sans", "Trebuchet MS", sans-serif;
+}
+
+.handwriting {
+  font-family: "Bradley Hand", "Segoe Print", "Snell Roundhand", "Comic Sans MS", cursive;
+}
